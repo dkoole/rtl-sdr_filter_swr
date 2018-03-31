@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import subprocess
 import csv
 
@@ -7,6 +8,7 @@ output_file = "output.csv"
 
 if __name__ == "__main__":
 	print "Script to measure Filters and VSWR with rtl-sdr dongle"
+	measurement_name = raw_input("Name for measurement")
 	startFrequency = input("Enter start frequency in MegaHertz ")
 	stopFrequency  = input("Enter stop frequenc in MegaHertz ")
 
@@ -19,7 +21,9 @@ if __name__ == "__main__":
 	reference = []
 	frequencies_start = []
 	frequencies_stop = []
-
+	filter_list = []
+	reference_list = []
+	attenuation = []
 
 	with open(reference_file, 'rb') as ref_file:
 		reader = csv.reader(ref_file, delimiter=",",quoting=csv.QUOTE_NONE)
@@ -39,4 +43,26 @@ if __name__ == "__main__":
 	    writer.writeheader()
 
 	    for i in xrange(len(reference)):
+	    	attenuation.append(float(filter_list[i]) - float(reference[i]))
 	    	writer.writerow({'Frequency': frequencies_start[i], '': frequencies_stop[i], 'Baseline dBm': reference[i], 'Filter dBm': filter_list[i], 'Attenuation' : float(filter_list[i]) - float(reference[i])})
+
+	plt.figure(1)
+	line_filter, = plt.plot(frequencies_start, filter_list, linewidth=3.0, label=measurement_name)
+	line_reference, = plt.plot(frequencies_start, reference, linewidth=3.0, label="Baseline")
+	plt.title(measurement_name, fontweight='bold')
+	plt.grid(True, linestyle='-')
+	plt.legend(handles=[line_reference, line_filter])
+	plt.ylabel('Power (dB)', fontweight='bold')
+	plt.xlabel('Frequency (Hz)', fontweight='bold')
+	plt.savefig("TestTest")
+
+	plt.figure(2)
+	attenuation_plot, = plt.plot(frequencies_start, attenuation, linewidth=3.0, label="Attenuation")
+	plt.title(measurement_name, fontweight='bold')
+	plt.grid(True, linestyle='-')
+	plt.legend(handles=[attenuation_plot])
+	plt.ylabel('Attenuation (dB)', fontweight='bold')
+	plt.xlabel('Frequency (Hz)', fontweight='bold')
+	plt.savefig("Attenuation")
+
+	plt.show()
